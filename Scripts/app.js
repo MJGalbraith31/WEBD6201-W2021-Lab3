@@ -1,8 +1,6 @@
-/* custom JavaScript goes here */
-
-//IIFE - Immediately Invoked Function Expression
-//AKA - Anonymous Self-Executing Function
-//Closure - limits scope leak
+// MJ Galbraith 
+// 100755993 
+// Mar. 21, 2021 
 
 "use strict";
 
@@ -398,8 +396,11 @@
         });
        
         $(`<li class="nav-item">
-        <a id="contact-list" class="nav-link" aria-current="page"><i class="fas fa-users fa-lg"></i> Contact List</a>
-      </li>`).insertBefore("#loginListItem");
+          <a id="contact-list" class="nav-link" aria-current="page"><i class="fas fa-users fa-lg"></i> Contact List</a>
+        </li>
+        <li class="nav-item">
+          <a id="task-list" class="nav-link" aria-current="page"><i class="fas fa-list fa-lg"></i> Task List</a>
+        </li>`).insertBefore("#loginListItem");
       }
       else
       {
@@ -414,8 +415,8 @@
     {
       if(!sessionStorage.getItem("user"))
       {
-      // redirect back to login page
-      location.href = "/login";
+        // redirect back to login page
+        location.href = "/login";
       }
     }
 
@@ -437,6 +438,7 @@
         case "edit": return displayEdit;
         case "login": return displayLogin;
         case "register": return displayRegister;
+        case "task-list": return DisplayTaskList;
         case "404": return display404;
         default:
           console.error("ERROR: callback does not exist: " + activeLink);
@@ -482,66 +484,71 @@
      */
     function DisplayTaskList()
     {
-        let messageArea = $("#messageArea");
-        messageArea.hide();
-        let taskInput = $("#taskTextInput");
+      // stopping visitors from accessing this page 
+      authGuard();
+      
+      let messageArea = $("#messageArea");
+      messageArea.hide();
+      let taskInput = $("#taskTextInput");
 
-        // add a new Task to the Task List
-        $("#newTaskButton").on("click", function()
-        {         
-            AddNewTask();
-        });
+      // add a new Task to the Task List
+      $("#newTaskButton").on("click", function()
+      {         
+        AddNewTask();
+      });
 
-        taskInput.on("keypress", function(event)
+      taskInput.on("keypress", function(event)
+      {
+        if(event.key == "Enter")
+        {
+          AddNewTask();
+        }
+      });
+
+      // Edit an Item in the Task List
+      $("ul").on("click", ".editButton", function()
+      {
+        let editText = $(this).parent().parent().children(".editTextInput");
+        let text = $(this).parent().parent().text();
+        editText.val(text).show().trigger("select");
+        editText.on("keypress", function(event)
         {
           if(event.key == "Enter")
           {
-            AddNewTask();
-          }
-         });
-
-        // Edit an Item in the Task List
-        $("ul").on("click", ".editButton", function(){
-           let editText = $(this).parent().parent().children(".editTextInput");
-           let text = $(this).parent().parent().text();
-           editText.val(text).show().trigger("select");
-           editText.on("keypress", function(event)
-           {
-            if(event.key == "Enter")
+            if(editText.val() != "" && editText.val().charAt(0) != " ")
             {
-              if(editText.val() != "" && editText.val().charAt(0) != " ")
-              {
-                editText.hide();
-                $(this).parent().children("#taskText").text(editText.val());
-                messageArea.removeAttr("class").hide();
-              }
-              else
-              {
-                editText.trigger("focus").trigger("select");
-                messageArea.show().addClass("alert alert-danger").text("Please enter a valid Task.");
-              }
+              editText.hide();
+              $(this).parent().children("#taskText").text(editText.val());
+              messageArea.removeAttr("class").hide();
             }
-           });
-        });
-
-        // Delete a Task from the Task List
-        $("ul").on("click", ".deleteButton", function(){
-            if(confirm("Are you sure?"))
+            else
             {
-                $(this).closest("li").remove();
-            }    
+              editText.trigger("focus").trigger("select");
+              messageArea.show().addClass("alert alert-danger").text("Please enter a valid Task.");
+            }
+          }
         });
+      });
+
+      // Delete a Task from the Task List
+      $("ul").on("click", ".deleteButton", function()
+      {
+        if(confirm("Are you sure?"))
+        {
+          $(this).closest("li").remove();
+        }    
+      });
     }
 
     function Start()
     {
-        console.log("App Started...");
+      console.log("App Started...");
 
-        loadHeader(router.ActiveLink);
+      loadHeader(router.ActiveLink);
       
-        loadContent(router.ActiveLink, ActiveLinkCallBack(router.ActiveLink));
+      loadContent(router.ActiveLink, ActiveLinkCallBack(router.ActiveLink));
 
-        loadFooter();
+      loadFooter();
     }
 
     window.addEventListener("load", Start);
